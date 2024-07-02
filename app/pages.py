@@ -32,7 +32,7 @@ def home():
         table_type = form.table.data
         species = form.species.data
         return redirect(url_for('pages.generate_query', table=table_type, species=species))
-    return render_template('pages/selector.html', form=form)
+    return render_template('pages/select_table_species.html', form=form)
 
 @app.route("/columns", methods=['GET', 'POST'])
 def generate_query():
@@ -47,4 +47,4 @@ def generate_query():
                                                 production_name=species,
                                                 cols=cols)
         return render_template("pages/data.html", cols=cols, data=table_data_iterator)
-    return render_template('pages/selector_column.html', form=form)
+    return render_template('pages/select_column.html', form=form)
