@@ -4,14 +4,10 @@
   <title>flask</title>
 </head>
 <body>
-    <section>
-      <header>
-        Create query
-      </header>
-    <main>
-        {% block table_selector %}{% endblock table_selector %}
-    </main>
-    </section>
-
+  <a href="{{ url_for('pages.home') }}">Create another query</a>
+  <div id="content">
+    {% block content%}{% endblock content%}
+  </div>
 </body>
+
 </html>
