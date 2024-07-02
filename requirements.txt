@@ -1,0 +1,4 @@
+search-python-client==0.1.9
+pypika==0.48.9
+flask==3.0.3
+flask-wtf==1.2.1

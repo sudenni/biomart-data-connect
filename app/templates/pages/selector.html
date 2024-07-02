@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block table_selector %}
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.table.label }}<br>
+            {{ form.table(style='height: 20px;') }}
+        </p>
+        <p>
+            {{ form.species.label }}<br>
+            {{ form.species(style='height: 20px;') }}
+        </p>
+
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}

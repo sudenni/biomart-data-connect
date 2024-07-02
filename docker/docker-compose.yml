@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: 'postgres'
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+  dataconnect:
+    image: data-connect-trino:elwazi
+    ports:
+      - '8089:8089'
+    environment:
+      TRINO_DATASOURCE_URL: http://host.docker.internal:8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/dataconnecttrino
+      SPRING_PROFILES_ACTIVE: no-auth
+    depends_on:
+      - postgres
