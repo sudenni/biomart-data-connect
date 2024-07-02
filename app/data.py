@@ -9,8 +9,16 @@ class DataConnectConnection():
         self.search_client = SearchClient(base_url=self.base_url)
 
     def query(self, stmt):
+        """ Execute SQL statement """
         table_data_iterator = self.search_client.search_table(stmt)
         return table_data_iterator
+
+    def info(self, table_name):
+        """ Retrieve column name from table """
+        table = '.'.join([app.config["CATALOG"], app.config["SCHEMA"], table_name])
+        table_info = self.search_client.get_table_info(table)
+        d = table_info["data_model"]["properties"]
+        return list(d.keys())
 
 class BuildSQLQuery():
     def __init__(self, table, cols) -> None:
@@ -22,3 +30,6 @@ class BuildSQLQuery():
     def build_base_query(self):
         query = PostgreSQLQuery.from_(self.table).select(*(self.table[col] for col in self.cols))
         return query
+    
+    def add_filter(self):
+        pass
