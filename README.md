@@ -1,7 +1,7 @@
 # Query Biomart with Data Connect
-Tied to project [ensembl-biomart-2024](repos)
+Tied to project [ensembl-biomart-2024](https://github.com/sudenni/ensembl-biomart-2024)
 
-This repo contains a Flask application to query the new BioMart implementation with Data Connect, and suppose you already have Trino and S3 set up and running ([biomart-trino-s3](repos)).
+This repo contains a Flask application to query the new BioMart implementation with Data Connect, and suppose you already have Trino and S3 set up and running ([biomart-trino-s3](https://github.com/sudenni/biomart-trino-s3)).
 
 ## Installation
 - Python version 3.10 with packages from `requirements.txt`
