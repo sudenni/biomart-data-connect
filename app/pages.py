@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 import ast
 
-from app.data import DataConnectConnection, BuildSQLQuery
+from app.query import DataConnectConnection, BuildSQLQuery
 from app.forms import TableForm, ColumnForm, FilterForm
 
 app = Blueprint("pages", __name__)
