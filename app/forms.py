@@ -1,6 +1,11 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, SelectMultipleField, SubmitField
+from wtforms import widgets, SelectField, SelectMultipleField, SubmitField
 from wtforms.validators import DataRequired
+
+class MultiCheckboxField(SelectMultipleField):
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
+
 
 class TableForm(FlaskForm):
     table = SelectField('Table',
@@ -14,7 +19,13 @@ class TableForm(FlaskForm):
     submit = SubmitField('Query table')
 
 class ColumnForm(FlaskForm):
-    columns = SelectMultipleField('Select columns', validators=[DataRequired()],
+    columns = MultiCheckboxField('Select columns', validators=[DataRequired()],
                           choices = [])
 
+    submit = SubmitField('Query table')
+
+class FilterForm(FlaskForm):
+    filter = MultiCheckboxField('Filter',
+                         validate_choice=[DataRequired()],
+                         choices = [])
     submit = SubmitField('Query table')
