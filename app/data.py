@@ -1,7 +1,8 @@
 from pypika import PostgreSQLQuery, Criterion
 from search_python_client.search import SearchClient
-
 from flask import current_app as app
+
+from app.table import Gene, Transcript, Translation
 
 class DataConnectConnection():
     def __init__(self) -> None:
@@ -24,8 +25,19 @@ class BuildSQLQuery():
     def __init__(self, table, cols, filters = None, limit = 5, distinct = False) -> None:
         catalog = app.config["CATALOG"]
         schema = app.config["SCHEMA"]
-        self.table = table(schema=(catalog, schema))
-        self.cols = cols
+        if table == 'gene':
+            t = Gene
+        elif table == 'transcript':
+            t = Transcript
+        else:
+            t = Translation
+        self.table = t(schema=(catalog, schema))
+        if isinstance(cols, str):
+            self.cols = [cols]
+        else:
+            self.cols = cols
+        if isinstance(filters, str):
+            self.filters = [filters]
         self.filters = filters
         self.limit = limit
         self.distinct = distinct
@@ -44,8 +56,7 @@ class BuildSQLQuery():
         conds = []
         t = self.table
         for element in self.filters:
-            print(element)
-            for key, value in element:
+            for key, value in element.items():
                 condition_field = getattr(t, key)
                 conds.append(condition_field == value)
         # AND
