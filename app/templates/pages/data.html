@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
-<table>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.css" />
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+
+<table id="table" class="display">
     <thead>
       <tr>
         {% for col in cols %}
@@ -18,5 +22,11 @@
       </tr>
     {% endfor %}
     </tbody>
-  </table>
+</table>
+
+<script>
+  $(document).ready( function () {
+    $('#table').DataTable();
+} );
+</script>
 {% endblock %}
