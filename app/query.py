@@ -22,7 +22,7 @@ class DataConnectConnection():
         return list(d.keys())
 
 class BuildSQLQuery():
-    def __init__(self, table, cols, filters = None, limit = 5, distinct = False) -> None:
+    def __init__(self, table, cols, filters = None, limit = None, distinct = False) -> None:
         catalog = app.config["CATALOG"]
         schema = app.config["SCHEMA"]
         if table == 'gene':
@@ -53,6 +53,7 @@ class BuildSQLQuery():
         return query
     
     def add_filter(self, query):
+        """ Create list of where statements """
         conds = []
         t = self.table
         for element in self.filters:
@@ -60,5 +61,5 @@ class BuildSQLQuery():
                 condition_field = getattr(t, key)
                 conds.append(condition_field == value)
         # AND
-        condition = Criterion.all([x for x in conds])
+        condition = Criterion.all(conds)
         return query.where(condition)
