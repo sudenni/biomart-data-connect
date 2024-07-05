@@ -61,7 +61,7 @@ def generate_filter():
             li = []
             stmt = BuildSQLQuery(table=table_type,
                                 cols=col,
-                                filters=[{"species": species}],
+                                filters=[[{"species": species}]],
                                 distinct=True).build_base_query()
             results = DataConnectConnection().query(stmt.get_sql())
             li.extend(create_labels(results))
@@ -71,8 +71,8 @@ def generate_filter():
     if form.validate_on_submit():
         filters = []
         for item in form.filter_list:
-            filters.extend([ast.literal_eval(x) for x in item.filter.data])
-        filters.append({"species": species})
+            filters.append([ast.literal_eval(x) for x in item.filter.data])
+        filters.append([{"species": species}])
         stmt = BuildSQLQuery(table=table_type, cols=cols, filters=filters, limit=form.limit.data).build_base_query()
         results = DataConnectConnection().query(stmt.get_sql())
         return render_template("pages/data.html", cols=cols, data=results)

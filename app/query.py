@@ -42,24 +42,31 @@ class BuildSQLQuery():
         self.limit = limit
         self.distinct = distinct
 
+    ## Build SQL statement
     def build_base_query(self):
+        """ Create SQL statement """
         query = PostgreSQLQuery.from_(self.table).select(*(self.table[col] for col in self.cols))
+        ## Add WHERE
         if self.filters is not None:
-            query = self.add_filter(query)
+            for f in self.filters:
+                query = self.add_filter(f, query)
+        ## Add LIMIT
         if self.limit is not None:
             query = query.limit(self.limit)
+        ## Add DISTINCT
         if self.distinct:
             query = query.distinct()
         return query
-    
-    def add_filter(self, query):
-        """ Create list of where statements """
-        conds = []
+
+    def add_filter(self, f, query):
+        """ Add WHERE to query """
         t = self.table
-        for element in self.filters:
+        ## filter is a list of dictionary
+        conds = []
+        for element in f:
             for key, value in element.items():
                 condition_field = getattr(t, key)
                 conds.append(condition_field == value)
-        # AND
-        condition = Criterion.all(conds)
+        ## WHERE OR
+        condition = Criterion.any(conds)
         return query.where(condition)
