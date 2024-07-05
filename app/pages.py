@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for
-import ast
 from flask import current_app as app_config
+import ast
+from collections import defaultdict
+
 
 from app.query import DataConnectConnection, BuildSQLQuery
 from app.forms import TableForm, ColumnForm, FilterForm, FilterTableForm
@@ -48,7 +50,7 @@ def generate_filter():
     """ Create filters """
     table_type = request.args.get('table')
     filter_col = request.args.getlist('filter_col')
-    species = request.args.get('species')
+    species = request.args.get('species', '')
     cols = request.args.getlist('cols')
 
     form = FilterTableForm()
@@ -61,7 +63,7 @@ def generate_filter():
             li = []
             stmt = BuildSQLQuery(table=table_type,
                                 cols=col,
-                                filters=[[{"species": species}]],
+                                filters={"species" : species},
                                 distinct=True).build_base_query()
             results = DataConnectConnection().query(stmt.get_sql())
             li.extend(create_labels(results))
@@ -69,11 +71,20 @@ def generate_filter():
             form.filter_list[-1].filter.choices = li
 
     if form.validate_on_submit():
-        filters = []
+        ## Filter on selected values
+        ## Create dict like {'column1' : ['v1', 'v2'], col2 = ['vA', 'vB', 'vC']}
+        d = defaultdict(list)
         for item in form.filter_list:
-            filters.append([ast.literal_eval(x) for x in item.filter.data])
-        filters.append([{"species": species}])
-        stmt = BuildSQLQuery(table=table_type, cols=cols, filters=filters, limit=form.limit.data).build_base_query()
+            ## Get form filter data back as dict
+            dicts = [ast.literal_eval(x) for x in item.filter.data]
+            ## Key with list of values
+            for dict in dicts:
+                for key, value in dict.items():
+                    d[key].append(value)
+        ## Filter on species
+        d['species'].append(species)
+        ## Query
+        stmt = BuildSQLQuery(table=table_type, cols=cols, filters=d, limit=form.limit.data).build_base_query()
         results = DataConnectConnection().query(stmt.get_sql())
         return render_template("pages/data.html", cols=cols, data=results)
     return render_template('pages/select_filter.html', form=form, filters=filter_col)

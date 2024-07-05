@@ -36,8 +36,6 @@ class BuildSQLQuery():
             self.cols = [cols]
         else:
             self.cols = cols
-        if isinstance(filters, str):
-            self.filters = [filters]
         self.filters = filters
         self.limit = limit
         self.distinct = distinct
@@ -48,8 +46,7 @@ class BuildSQLQuery():
         query = PostgreSQLQuery.from_(self.table).select(*(self.table[col] for col in self.cols))
         ## Add WHERE
         if self.filters is not None:
-            for f in self.filters:
-                query = self.add_filter(f, query)
+            query = self.add_filter(query)
         ## Add LIMIT
         if self.limit is not None:
             query = query.limit(self.limit)
@@ -58,15 +55,19 @@ class BuildSQLQuery():
             query = query.distinct()
         return query
 
-    def add_filter(self, f, query):
+    def add_filter(self, query):
         """ Add WHERE to query """
         t = self.table
-        ## filter is a list of dictionary
         conds = []
-        for element in f:
-            for key, value in element.items():
-                condition_field = getattr(t, key)
+        ## filters is a dict with values as a list
+        for key in self.filters:
+            condition_field = getattr(t, key)
+            value = self.filters[key]
+            if isinstance(value, str):
                 conds.append(condition_field == value)
+            else:
+                for val in value:
+                    conds.append(condition_field == val)
         ## WHERE OR
         condition = Criterion.any(conds)
         return query.where(condition)
