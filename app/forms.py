@@ -32,5 +32,5 @@ class FilterForm(Form):
 
 class FilterTableForm(FlaskForm):
     filter_list = FieldList(FormField(FilterForm))
-    limit = IntegerField('Limit', default=5)
+    limit = IntegerField('Limit', validators=[Optional()], default=5)
     submit = SubmitField('Query table')
