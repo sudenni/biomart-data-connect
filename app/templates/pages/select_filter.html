@@ -1,12 +1,69 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+.row {
+  display: flex;
+  margin-left:5px;
+  margin-right:5px;
+  
+}
+
+.column {
+  width: auto;
+  padding: 5px;
+}
+
+table {
+  width: 100%;
+}
+
+.filter_display {
+    overflow: scroll; 
+    max-height: 80vh
+}
+
+html::-webkit-scrollbar {
+  background-color: transparent;
+}
+
+</style>
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
-        <p>
-            {{ form.filter.label }}<br>
-            {{ form.filter }}
-        </p>
-        <p>{{ form.submit() }}</p>
+        <div class="row">
+            {% if filters %}
+            <div class="column">
+                <table>
+                    <tr>
+                        {% for col in filters %}
+                        <th>{{ col }} </th>
+                        {% endfor %}
+                    </tr>
+            
+                    <tr>
+                        {% for filter in form.filter_list %}
+                        <td>
+                            <div class="filter_display">{{ filter.filter }}</div>
+                        </td>
+                    {% endfor %}
+                    </tr>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        <div class="row">
+            <table>
+                <tr>
+                    <td>{{ form.limit.label }}</td>
+                    <td>{{ form.limit }} </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        {{ form.submit() }}
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
     </form>
 {% endblock %}
