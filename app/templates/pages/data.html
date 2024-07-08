@@ -1,7 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-<table>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.css" />
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/3.0.2/css/buttons.dataTables.css" />
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script type="text/javascript" charset="utf8"src="https://cdn.datatables.net/buttons/3.0.2/js/dataTables.buttons.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.html5.min.js"></script>
+
+<table id="table" class="display">
     <thead>
       <tr>
         {% for col in cols %}
@@ -13,10 +21,28 @@
     {% for item in data %}
       <tr>
           {% for value in item.values() %}
-            <td> {{ value }} </td>
+              {% if value is none or value == [] %}
+              <td></td>
+              {% else %}
+              <td> {{ value }} </td>
+              {% endif %}
           {% endfor %}
       </tr>
     {% endfor %}
     </tbody>
-  </table>
+</table>
+
+<script>
+  $(document).ready( function () {
+    $('#table').DataTable({
+      buttons: true,
+      layout: {
+        bottom: {
+          buttons: ['copy', 'csv']
+        }
+    }
+    });
+} );
+
+</script>
 {% endblock %}

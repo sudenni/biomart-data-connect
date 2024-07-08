@@ -1,28 +1,16 @@
 from flask import Blueprint, render_template, request, redirect, url_for
+from flask import current_app as app_config
+import ast
+from collections import defaultdict
 
-from app.data import DataConnectConnection, BuildSQLQuery
-from app.table import Gene, Transcript, Translation
-from app.forms import TableForm, ColumnForm
+
+from app.query import DataConnectConnection, BuildSQLQuery
+from app.forms import TableForm, ColumnForm, FilterForm, FilterTableForm
 
 app = Blueprint("pages", __name__)
 
-def data_connect_query(table_type, production_name, cols):
-    """ Query table gene, transcript or translation for given species and columns """
-    ## Get table class
-    if table_type == 'gene':
-        t = Gene
-    elif table_type == 'transcript':
-        t = Transcript
-    else:
-        t = Translation
-    ## Build SQL statement
-    q = BuildSQLQuery(table=t, cols=cols)
-    table = q.table
-    q = q.build_base_query().where(table.species == production_name).limit(5)
-    stmt = q.get_sql()
-    ## Get results iterator -- format is {'column_name' : 'value'} for each row
-    table_data_iterator = DataConnectConnection().query(stmt)
-    return table_data_iterator
+def intersect(lst1, lst2):
+	return list(set(lst1) & set(lst2))
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -39,12 +27,64 @@ def generate_query():
     """ Select columns and show results """
     table_type = request.args.get('table', '')
     species = request.args.get('species', '')
+
     form = ColumnForm()
+    ## Fill form choices
     form.columns.choices = DataConnectConnection().info(table_name=table_type)
     if form.validate_on_submit():
         cols = form.columns.data
-        table_data_iterator = data_connect_query(table_type=table_type,
-                                                production_name=species,
-                                                cols=cols)
-        return render_template("pages/data.html", cols=cols, data=table_data_iterator)
+        filter_col = intersect(cols, app_config.config["FILTERS"])
+        return redirect(url_for('pages.generate_filter', table=table_type, filter_col=filter_col, cols=cols, species=species))
     return render_template('pages/select_column.html', form=form)
+
+def create_labels(data_iterator):
+    """ Create list of tuple ({'column', 'value'}, 'value') for filters """
+    li = []
+    for element in data_iterator:
+        for val in element.values():
+            li.append((element, val))
+    return li
+
+@app.route("/filters", methods=['GET', 'POST'])
+def generate_filter():
+    """ Create filters """
+    table_type = request.args.get('table')
+    filter_col = request.args.getlist('filter_col')
+    species = request.args.get('species', '')
+    cols = request.args.getlist('cols')
+
+    form = FilterTableForm()
+    if filter_col is None:
+        del form.filter_list
+    ## Fill form choices
+    else:
+        for col in filter_col:
+            filt = FilterForm()
+            li = []
+            stmt = BuildSQLQuery(table=table_type,
+                                cols=col,
+                                filters={"species" : species},
+                                distinct=True).build_base_query()
+            results = DataConnectConnection().query(stmt.get_sql())
+            li.extend(create_labels(results))
+            form.filter_list.append_entry(filt)
+            form.filter_list[-1].filter.choices = li
+
+    if form.validate_on_submit():
+        ## Filter on selected values
+        ## Create dict like {'column1' : ['v1', 'v2'], col2 = ['vA', 'vB', 'vC']}
+        d = defaultdict(list)
+        for item in form.filter_list:
+            ## Get form filter data back as dict
+            dicts = [ast.literal_eval(x) for x in item.filter.data]
+            ## Key with list of values
+            for dict in dicts:
+                for key, value in dict.items():
+                    d[key].append(value)
+        ## Filter on species
+        d['species'].append(species)
+        ## Query
+        stmt = BuildSQLQuery(table=table_type, cols=cols, filters=d, limit=form.limit.data).build_base_query()
+        results = DataConnectConnection().query(stmt.get_sql())
+        return render_template("pages/data.html", cols=cols, data=results)
+    return render_template('pages/select_filter.html', form=form, filters=filter_col)
