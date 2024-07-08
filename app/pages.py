@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from flask import current_app as app_config
 import ast
+import bisect
 from collections import defaultdict
 
 
@@ -43,6 +44,7 @@ def create_labels(data_iterator):
     for element in data_iterator:
         for val in element.values():
             li.append((element, val))
+    li.sort(key=lambda tup: tup[1])
     return li
 
 @app.route("/filters", methods=['GET', 'POST'])
@@ -72,7 +74,7 @@ def generate_filter():
 
     if form.validate_on_submit():
         ## Filter on selected values
-        ## Create dict like {'column1' : ['v1', 'v2'], col2 = ['vA', 'vB', 'vC']}
+        ## Create dict like {'column1' : ['v1', 'v2'], 'column2' : ['vA', 'vB', 'vC']}
         d = defaultdict(list)
         for item in form.filter_list:
             ## Get form filter data back as dict
