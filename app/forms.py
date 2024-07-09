@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm, Form
-from wtforms import widgets, SelectField, SelectMultipleField, SubmitField, IntegerField, FieldList, FormField
+from wtforms import widgets, SelectField, SelectMultipleField, SubmitField, IntegerField, FieldList, FormField, StringField
 from wtforms.validators import DataRequired, Optional
 
 class MultiCheckboxField(SelectMultipleField):
@@ -12,9 +12,9 @@ class TableForm(FlaskForm):
                         validators=[DataRequired()],
                         choices=[('gene', 'Gene'), ('transcript', 'Transcript'), ('translation', 'Translation')])
 
-    species = SelectField('Species',
-                          validate_choice=[DataRequired()],
-                          choices = ['bos_taurus', 'homo_sapiens', 'mus_musculus'])
+    species = StringField('Species',
+                          validators=[DataRequired()],
+                          id='species_autocomplete')
 
     submit = SubmitField('Query table')
 
