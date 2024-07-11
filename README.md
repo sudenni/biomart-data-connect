@@ -31,6 +31,8 @@ cd docker
 docker-compose up -d
 ```
 
+:warning: The [hive-metastore image](https://github.com/bitsondatadev/hive-metastore) should not be used for production.
+
 ### Populate the database
 Trino can take some time to launch. Check if Trino is running with:
 ```
