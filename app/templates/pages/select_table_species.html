@@ -1,5 +1,14 @@
 {% extends "base.html" %}
 
+{% block head%}
+<title>home</title> 
+<meta charset="utf-8">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+<script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.js"></script>
+{% endblock%}
+
+
 {% block content %}
 <h2>Create query</h2>
     <form action="" method="post" id="example-form" novalidate>
@@ -15,4 +24,18 @@
         
         <p>{{ form.submit() }}</p>
     </form>
+
+<script>
+    $(function() {
+        $.ajax({
+            url: '{{ url_for("pages.autocomplete") }}'
+            }).done(function (data){
+                $('#species_autocomplete').autocomplete({
+                    source: data,
+                    minLength: 2
+                });
+            });
+        });
+</script>
+
 {% endblock %}

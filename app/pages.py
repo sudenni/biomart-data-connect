@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, Response
 from flask import current_app as app_config
 import ast
+import json
 from collections import defaultdict
 
 
@@ -10,12 +11,33 @@ from app.forms import TableForm, ColumnForm, FilterForm, FilterTableForm
 app = Blueprint("pages", __name__)
 
 def intersect(lst1, lst2):
-	return list(set(lst1) & set(lst2))
+    """ Return intersection of lists """
+    return list(set(lst1) & set(lst2))
+
+# cache
+def get_species():
+    """ List of species in database """
+    stmt = BuildSQLQuery(table='transcript',
+                                cols='species',
+                                distinct=True).build_base_query()
+    results = DataConnectConnection().query(stmt.get_sql())
+    li = []
+    for element in results:
+        for val in element.values():
+            li.append(val)
+    return li
+
+@app.route('/_autocomplete', methods=['GET'])
+def autocomplete():
+    """ Autocompletion for species """
+    species_autocomp = get_species()
+    print(species_autocomp)
+    return Response(json.dumps(species_autocomp), mimetype='application/json')
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
     """" Select table and species """
-    form = TableForm()
+    form = TableForm(request.form)
     if form.validate_on_submit():
         table_type = form.table.data
         species = form.species.data
@@ -43,6 +65,7 @@ def create_labels(data_iterator):
     for element in data_iterator:
         for val in element.values():
             li.append((element, val))
+    li.sort(key=lambda tup: tup[1])
     return li
 
 @app.route("/filters", methods=['GET', 'POST'])
@@ -72,7 +95,7 @@ def generate_filter():
 
     if form.validate_on_submit():
         ## Filter on selected values
-        ## Create dict like {'column1' : ['v1', 'v2'], col2 = ['vA', 'vB', 'vC']}
+        ## Create dict like {'column1' : ['v1', 'v2'], 'column2' : ['vA', 'vB', 'vC']}
         d = defaultdict(list)
         for item in form.filter_list:
             ## Get form filter data back as dict
