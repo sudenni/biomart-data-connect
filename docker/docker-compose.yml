@@ -18,3 +18,49 @@ services:
       SPRING_PROFILES_ACTIVE: no-auth
     depends_on:
       - postgres
+
+  trino-coordinator:
+    image: 'trinodb/trino:418'
+    hostname: trino
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./etc:/etc/trino
+    networks:
+      - trino-network
+
+  mariadb:
+    image: 'mariadb:10.9.6'
+    hostname: mariadb
+    ports:
+      - '3306:3306'
+    volumes:
+      - maria_volume:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_DATABASE: metastore_db
+    networks:
+      - trino-network
+
+  hive-metastore:
+    image: 'bitsondatadev/hive-metastore:latest'
+    hostname: hive-metastore
+    ports:
+      - '9083:9083'
+    volumes:
+      - ./conf/metastore-site.xml:/opt/apache-hive-metastore-3.0.0-bin/conf/metastore-site.xml:ro
+    environment:
+      METASTORE_DB_HOSTNAME: mariadb
+    depends_on:
+      - mariadb
+    networks:
+      - trino-network
+
+volumes:
+  maria_volume:
+
+networks:
+  trino-network:
+    driver: bridge
