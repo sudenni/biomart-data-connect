@@ -20,6 +20,14 @@ class DataConnectConnection():
         table_info = self.search_client.get_table_info(table)
         d = table_info["data_model"]["properties"]
         return list(d.keys())
+    
+    def tables(self):
+        """ Retrieve available tables """
+        tables_iterator = self.search_client.get_table_list()
+        tables = list(tables_iterator)
+        table_names = [t['name'].split('.')[-1] for t in tables]
+        return table_names
+
 
 class BuildSQLQuery():
     def __init__(self, table, cols, filters = None, limit = None, distinct = False) -> None:
