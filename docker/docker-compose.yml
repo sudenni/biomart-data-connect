@@ -20,7 +20,7 @@ services:
       - postgres
 
   trino-coordinator:
-    image: 'trinodb/trino:418'
+    image: 'trinodb/trino:451'
     hostname: trino
     ports:
       - '8080:8080'
@@ -28,7 +28,7 @@ services:
       - ./etc:/etc/trino
     networks:
       - trino-network
-
+    
   mariadb:
     image: 'mariadb:10.9.6'
     hostname: mariadb
