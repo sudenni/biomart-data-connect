@@ -4,7 +4,6 @@ import ast
 import json
 from collections import defaultdict
 
-
 from app.query import DataConnectConnection, BuildSQLQuery
 from app.forms import TableForm, ColumnForm, FilterForm, FilterTableForm
 
@@ -14,7 +13,6 @@ def intersect(lst1, lst2):
     """ Return intersection of lists """
     return list(set(lst1) & set(lst2))
 
-# cache
 def get_species():
     """ List of species in database """
     stmt = BuildSQLQuery(table='transcript',
@@ -31,7 +29,6 @@ def get_species():
 def autocomplete():
     """ Autocompletion for species """
     species_autocomp = get_species()
-    print(species_autocomp)
     return Response(json.dumps(species_autocomp), mimetype='application/json')
 
 @app.route('/', methods=['GET', 'POST'])
@@ -111,3 +108,37 @@ def generate_filter():
         results = DataConnectConnection().query(stmt.get_sql())
         return render_template("pages/data.html", cols=cols, data=results)
     return render_template('pages/select_filter.html', form=form, filters=filter_col)
+
+
+## API
+@app.route('/api/species', methods=['GET'])
+def api_species():
+    species = get_species()
+    species.sort()
+    return species
+
+@app.route('/api/tables', methods=['GET'])
+def api_tables():
+    tables = DataConnectConnection().tables()
+    return tables
+
+@app.route('/api/tables/<table>', methods=['GET'])
+def api_columns(table):
+    columns = DataConnectConnection().info(table_name=table)
+    return columns
+
+def get_attribute(data, attribute):
+    return data.get(attribute) or None
+
+@app.route('/api/query/<table>', methods=['GET'])
+def api_query(table):
+    if request.is_json:
+        data = request.get_json()
+        columns = get_attribute(data, 'columns')
+        filters = get_attribute(data, 'filters')
+        limit = get_attribute(data, 'limit')
+
+        stmt = BuildSQLQuery(table=table, cols=columns, filters=filters, limit=limit).build_base_query()
+        results = DataConnectConnection().query(stmt.get_sql())
+
+        return list(results)
