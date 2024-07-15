@@ -31,6 +31,8 @@ cd docker
 docker-compose up -d
 ```
 
+:warning: The [hive-metastore image](https://github.com/bitsondatadev/hive-metastore) should not be used for production.
+
 ### Populate the database
 Trino can take some time to launch. Check if Trino is running with:
 ```
@@ -60,15 +62,39 @@ CALL hive.system.sync_partition_metadata('biomart', 'translation', 'ADD');
 SELECT * FROM hive.biomart.translation limit 5;
 ```
 
+Check if everything is running by going on `localhost:8089/tables` and browsing tables.
 
 ### Query with Data Connect
-Check if everything is running by going on `localhost:8089/tables` and browsing tables.
+Modify `CATALOG` and `SCHEMA` in `app/config.py` to match the schema created with Trino. With the previous example `CATALOG = 'hive'` and `SCHEMA = 'biomart'`. `FILTERS` is a list of columns you want to generate filters on when running a query through the web interface.
 
 ```
 python -m flask run --port 8000
 ```
 
 Go to `localhost:8000` and construct your query by selecting the table, species and columns.
+
+Or use API endpoints:
+- `localhost:8000/api/species` is the list of species in the database
+- `localhost:8000/api/tables` is the list of tables in the database
+- `localhost:8000/api/tables/<TABLE>` gives the list of columns in a given table
+Build a query by giving columns, filters (optional) and limit (optional) as JSON through `localhost:8000/api/query/<TABLE>`. For example:
+```python
+import requests
+
+json_data = {
+    'columns' : ["stable_id", "region_name", "start", "end", "strand", "biotype"],
+    'filters' : {'biotype' : ['protein_coding', 'rRNA'], 'species' : ['homo_sapiens']},
+    'limit' : 10
+    }
+
+requests.get('http://localhost:8000/api/query/gene',
+                    json=json_data,
+                    timeout=60)
+```
+is equivalent to:
+```sql
+SELECT "stable_id","region_name","start","end","strand","biotype" FROM "hive"."biomart"."gene" WHERE ("biotype"='protein_coding' OR "biotype"='rRNA') AND "species"='homo_sapiens' LIMIT 10;
+```
 
 ## Stop the application
 Once done, stop Docker.
