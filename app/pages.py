@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, Response
+from flask import Blueprint, render_template, request, redirect, url_for, Response, session
 from flask import current_app as app_config
 import ast
 import json
@@ -47,13 +47,22 @@ def generate_query():
     table_type = request.args.get('table', '')
     species = request.args.get('species', '')
 
-    form = ColumnForm()
+    # Check if columns are already stored in session
+    store_col = ''.join([table_type, '_columns'])
+    if store_col in session:
+        get_cols = session[store_col]
+    else:
+        # Execute the query once to get the columns
+        get_cols = DataConnectConnection().info(table_name=table_type)
+        # Store the columns in session to avoid re-querying
+        session[store_col] = get_cols
     ## Fill form choices
-    form.columns.choices = DataConnectConnection().info(table_name=table_type)
+    form = ColumnForm()
+    form.columns.choices = get_cols
+    
     if form.validate_on_submit():
-        cols = form.columns.data
-        filter_col = intersect(cols, app_config.config["FILTERS"])
-        return redirect(url_for('pages.generate_filter', table=table_type, filter_col=filter_col, cols=cols, species=species))
+        filter_col = intersect(form.columns.data, app_config.config["FILTERS"])
+        return redirect(url_for('pages.generate_filter', table=table_type, filter_col=filter_col, cols=form.columns.data, species=species))
     return render_template('pages/select_column.html', form=form)
 
 def create_labels(data_iterator):
@@ -79,16 +88,20 @@ def generate_filter():
     ## Fill form choices
     else:
         for col in filter_col:
-            filt = FilterForm()
-            li = []
-            stmt = BuildSQLQuery(table=table_type,
+            if col in session:
+                get_filters = session[col]
+            else:
+                stmt = BuildSQLQuery(table=table_type,
                                 cols=col,
                                 filters={"species" : species},
                                 distinct=True).build_base_query()
-            results = DataConnectConnection().query(stmt.get_sql())
-            li.extend(create_labels(results))
+                results = DataConnectConnection().query(stmt.get_sql())
+                get_filters = create_labels(results)
+                session[col] = get_filters
+    
+            filt = FilterForm()
             form.filter_list.append_entry(filt)
-            form.filter_list[-1].filter.choices = li
+            form.filter_list[-1].filter.choices = get_filters
 
     if form.validate_on_submit():
         ## Filter on selected values
