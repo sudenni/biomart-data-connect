@@ -78,12 +78,16 @@ Modify `CATALOG` and `SCHEMA` in `app/config.py` to match the schema created wit
 python -m flask run --port 8000
 ```
 
-Go to `localhost:8000` and construct your query by selecting the table, species and columns.
+Go to `localhost:8000` and construct your query with the interface by:
+1. Selecting the table and species.
+2. Selecting columns from the table.
+3. Selecting columns and limit filters. Filters are available only if a column from the `FILTERS` config was selected. These filters are optional, leave limit blank to get the entire dataset.
 
 Or use API endpoints:
 - `localhost:8000/api/species` is the list of species in the database
 - `localhost:8000/api/tables` is the list of tables in the database
 - `localhost:8000/api/tables/<TABLE>` gives the list of columns in a given table
+
 Build a query by giving columns, filters (optional) and limit (optional) as JSON through `localhost:8000/api/query/<TABLE>`. For example:
 ```python
 import requests
