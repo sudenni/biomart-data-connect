@@ -33,6 +33,8 @@ cd docker
 docker-compose up -d
 ```
 
+The docker setup runs as is, but if adjustments are needed Trino configuration files are in `docker/etc`, Hive configuration files are in `docker/conf`.
+
 :warning: The [hive-metastore image](https://github.com/bitsondatadev/hive-metastore) should not be used for production.
 
 ### Populate the database
