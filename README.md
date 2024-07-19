@@ -25,11 +25,15 @@ git checkout
 ### Configure AWS keys
 Replace `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in `docker/etc/catalog/hive.properties`, and `docker/conf/metastore-site.xml`
 
+[Guide to create AWS access keys](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey)
+
 ### Start Trino and Data Connect
 ```
 cd docker
 docker-compose up -d
 ```
+
+The docker setup runs as is, but if adjustments are needed Trino configuration files are in `docker/etc`, Hive configuration files are in `docker/conf`.
 
 :warning: The [hive-metastore image](https://github.com/bitsondatadev/hive-metastore) should not be used for production.
 
@@ -39,14 +43,17 @@ Trino can take some time to launch. Check if Trino is running with:
 trino
 show catalogs;
 ```
+Catalogs are defined in the `docker/etc/catalog` folder.
 
-First create a schema for your AWS S3 bucket.
+This is a small example for a partitioned translation table, the full script for BioMart tables is in `docker/create_tables.sql`
+
+1. Create a schema for your AWS S3 bucket.
 ```sql
 CREATE SCHEMA hive.biomart WITH (location = 's3a://your-bucket/');
 SHOW SCHEMA FROM hive;
 ```
 
-Then create tables. This is a small example for a partitioned translation table, the full script for BioMart tables is in `docker/create_tables.sql`
+2. Create tables.
 
 Column name and type should match with the Parquet file.
 ```sql
@@ -71,12 +78,16 @@ Modify `CATALOG` and `SCHEMA` in `app/config.py` to match the schema created wit
 python -m flask run --port 8000
 ```
 
-Go to `localhost:8000` and construct your query by selecting the table, species and columns.
+Go to `localhost:8000` and construct your query with the interface by:
+1. Selecting the table and species.
+2. Selecting columns from the table.
+3. Selecting columns and limit filters. Filters are available only if a column from the `FILTERS` config was selected. These filters are optional, leave limit blank to get the entire dataset.
 
 Or use API endpoints:
 - `localhost:8000/api/species` is the list of species in the database
 - `localhost:8000/api/tables` is the list of tables in the database
 - `localhost:8000/api/tables/<TABLE>` gives the list of columns in a given table
+
 Build a query by giving columns, filters (optional) and limit (optional) as JSON through `localhost:8000/api/query/<TABLE>`. For example:
 ```python
 import requests
@@ -93,7 +104,10 @@ requests.get('http://localhost:8000/api/query/gene',
 ```
 is equivalent to:
 ```sql
-SELECT "stable_id","region_name","start","end","strand","biotype" FROM "hive"."biomart"."gene" WHERE ("biotype"='protein_coding' OR "biotype"='rRNA') AND "species"='homo_sapiens' LIMIT 10;
+SELECT "stable_id","region_name","start","end","strand","biotype" 
+FROM "hive"."biomart"."gene" 
+WHERE ("biotype"='protein_coding' OR "biotype"='rRNA') AND "species"='homo_sapiens' 
+LIMIT 10;
 ```
 
 ## Stop the application
