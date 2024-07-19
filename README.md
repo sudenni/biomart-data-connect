@@ -25,6 +25,8 @@ git checkout
 ### Configure AWS keys
 Replace `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in `docker/etc/catalog/hive.properties`, and `docker/conf/metastore-site.xml`
 
+[Guide to create AWS access keys](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey)
+
 ### Start Trino and Data Connect
 ```
 cd docker
@@ -39,14 +41,17 @@ Trino can take some time to launch. Check if Trino is running with:
 trino
 show catalogs;
 ```
+Catalogs are defined in the `docker/etc/catalog` folder.
 
-First create a schema for your AWS S3 bucket.
+This is a small example for a partitioned translation table, the full script for BioMart tables is in `docker/create_tables.sql`
+
+1. Create a schema for your AWS S3 bucket.
 ```sql
 CREATE SCHEMA hive.biomart WITH (location = 's3a://your-bucket/');
 SHOW SCHEMA FROM hive;
 ```
 
-Then create tables. This is a small example for a partitioned translation table, the full script for BioMart tables is in `docker/create_tables.sql`
+2. Create tables.
 
 Column name and type should match with the Parquet file.
 ```sql
@@ -93,7 +98,10 @@ requests.get('http://localhost:8000/api/query/gene',
 ```
 is equivalent to:
 ```sql
-SELECT "stable_id","region_name","start","end","strand","biotype" FROM "hive"."biomart"."gene" WHERE ("biotype"='protein_coding' OR "biotype"='rRNA') AND "species"='homo_sapiens' LIMIT 10;
+SELECT "stable_id","region_name","start","end","strand","biotype" 
+FROM "hive"."biomart"."gene" 
+WHERE ("biotype"='protein_coding' OR "biotype"='rRNA') AND "species"='homo_sapiens' 
+LIMIT 10;
 ```
 
 ## Stop the application
