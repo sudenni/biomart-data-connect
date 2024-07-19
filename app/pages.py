@@ -88,8 +88,9 @@ def generate_filter():
     ## Fill form choices
     else:
         for col in filter_col:
-            if col in session:
-                get_filters = session[col]
+            filter_for_species = f'{col}_{species}'
+            if filter_for_species in session:
+                get_filters = session[filter_for_species]
             else:
                 stmt = BuildSQLQuery(table=table_type,
                                 cols=col,
@@ -97,7 +98,7 @@ def generate_filter():
                                 distinct=True).build_base_query()
                 results = DataConnectConnection().query(stmt.get_sql())
                 get_filters = create_labels(results)
-                session[col] = get_filters
+                session[filter_for_species] = get_filters
     
             filt = FilterForm()
             form.filter_list.append_entry(filt)
