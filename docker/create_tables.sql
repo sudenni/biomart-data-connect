@@ -85,6 +85,7 @@ hive.biomart.compara (
     homologue_perc_id DOUBLE,
     species VARCHAR
 )
+with (external_location = 's3a://20240625-241-genomes/compara', format = 'PARQUET', partitioned_by = ARRAY['species']);
 
 -- partitions
 call hive.system.sync_partition_metadata('biomart', 'gene', 'ADD');
