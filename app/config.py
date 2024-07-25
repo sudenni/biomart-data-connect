@@ -3,4 +3,4 @@ class Config:
     DATA_CONNECT_URL = 'http://localhost:8089/'
     CATALOG = 'hive'
     SCHEMA = 'biomart'
-    FILTERS = ['biotype', 'region_name']
+    FILTERS = ['biotype', 'region_name', 'type', 'homolog_species']
