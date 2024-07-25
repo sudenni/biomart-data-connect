@@ -71,6 +71,10 @@ SELECT * FROM hive.biomart.translation limit 5;
 
 Check if everything is running by going on `localhost:8089/tables` and browsing tables.
 
+3. Add tables to the interface.
+
+In `app/forms.py`, add a tuple `(<table_name>, <display_name>)` to `TableForm` choices list to make the table avaible in the Flask interface.
+
 ### Query with Data Connect
 Modify `CATALOG` and `SCHEMA` in `app/config.py` to match the schema created with Trino. With the previous example `CATALOG = 'hive'` and `SCHEMA = 'biomart'`. `FILTERS` is a list of columns you want to generate filters on when running a query through the web interface.
 
