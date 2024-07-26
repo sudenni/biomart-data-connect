@@ -60,9 +60,26 @@ def generate_query():
     form = ColumnForm()
     form.columns.choices = get_cols
     
+    ## Make Compara columns available when query on Gene
+    if table_type == "gene":
+        form.columns_compara.choices = DataConnectConnection().info(table_name="compara")
+    else:
+        del form.columns_compara
+
     if form.validate_on_submit():
+        if form.columns_compara is not None:
+            cols_compara_data = form.columns_compara.data
+        else:
+            cols_compara_data = None
+
+        print(cols_compara_data)
         filter_col = intersect(form.columns.data, app_config.config["FILTERS"])
-        return redirect(url_for('pages.generate_filter', table=table_type, filter_col=filter_col, cols=form.columns.data, species=species))
+        return redirect(url_for('pages.generate_filter', 
+                                table=table_type, 
+                                filter_col=filter_col, 
+                                cols=form.columns.data, 
+                                cols_compara=cols_compara_data,
+                                species=species))
     return render_template('pages/select_column.html', form=form)
 
 def create_labels(data_iterator):
@@ -81,6 +98,9 @@ def generate_filter():
     filter_col = request.args.getlist('filter_col')
     species = request.args.get('species', '')
     cols = request.args.getlist('cols')
+
+    ## Compara columns
+    cols_compara = request.args.getlist('cols_compara', '')
 
     form = FilterTableForm()
     if filter_col is None:
@@ -118,8 +138,14 @@ def generate_filter():
         ## Filter on species
         d['species'].append(species)
         ## Query
-        stmt = BuildSQLQuery(table=table_type, cols=cols, filters=d, limit=form.limit.data).build_base_query()
+        # Join with Compara
+        if cols_compara is not None:
+            stmt = BuildSQLQuery(table=table_type, cols=cols, filters=d, limit=form.limit.data, cols_compara=cols_compara, species_compara=species).build_base_query()
+            cols.extend(cols_compara)
+        else:
+            stmt = BuildSQLQuery(table=table_type, cols=cols, filters=d, limit=form.limit.data).build_base_query()
         results = DataConnectConnection().query(stmt.get_sql())
+
         return render_template("pages/data.html", cols=cols, data=results)
     return render_template('pages/select_filter.html', form=form, filters=filter_col)
 
