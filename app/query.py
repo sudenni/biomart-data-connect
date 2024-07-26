@@ -28,12 +28,20 @@ class DataConnectConnection():
 
 
 class BuildSQLQuery():
-    def __init__(self, table, cols, filters = None, limit = None, distinct = False) -> None:
+    def __init__(self, table, cols, filters = None, limit = None, distinct = False, cols_compara = None, species_compara = None) -> None:
         catalog = app.config["CATALOG"]
         schema = app.config["SCHEMA"]
-
         t = Table(table, schema=(catalog, schema))
         self.table = t
+
+        ## To join with Compara
+        self.cols_compara = cols_compara
+        ## species compara is needed to filter Compara on species, otherwise the query takes too long and Trino fails
+        self.species_compara = species_compara
+        if table == "gene":
+            compara_table = Table('compara', schema=(catalog, schema))
+            self.compara_table = compara_table
+        
         if isinstance(cols, str):
             self.cols = [cols]
         else:
@@ -45,7 +53,11 @@ class BuildSQLQuery():
     ## Build SQL statement
     def build_base_query(self):
         """ Create SQL statement """
-        query = PostgreSQLQuery.from_(self.table).select(*(self.table[col] for col in self.cols))
+        # Join gene with compara
+        if self.cols_compara:
+            query = PostgreSQLQuery.from_(self.table).select(*(self.table[col] for col in self.cols)).join(self.compara_table).on(self.table.stable_id == self.compara_table.stable_id).select(*(self.compara_table[col] for col in self.cols_compara)).where(self.compara_table.species == self.species_compara)
+        else:
+            query = PostgreSQLQuery.from_(self.table).select(*(self.table[col] for col in self.cols))
         ## Add WHERE
         if self.filters is not None:
             for i in self.filters:
