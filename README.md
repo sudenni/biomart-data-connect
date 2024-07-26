@@ -1,4 +1,6 @@
 # BioMart with Data Connect
+:arrow_right: **In this branch you can join the gene and compara tables through the interface. When selecting "Gene", you can also select columns from Compara but it is not possible to filter on them. This join is hard coded in `app/query.py` and happens if columns from Compara are selected.**
+
 EMBL-EBI internship project supervised by Andy Yates (April to July 2024). This project aims to replace BioMart with a new query engine and new data files.
 
 This repo contains a Flask application to query the new BioMart implementation with Data Connect and Trino on Parquet Data in AWS S3 buckets.
