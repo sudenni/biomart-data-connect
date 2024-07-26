@@ -1,5 +1,8 @@
+-- schema
 create schema hive.biomart with (location = 's3a://20240625-241-genomes/');
 
+-- tables
+-- gene
 create table
 hive.biomart.gene (
 gene_id BIGINT,
@@ -27,6 +30,7 @@ species VARCHAR
 )
 with (external_location = 's3a://20240625-241-genomes/gene', format = 'PARQUET', partitioned_by = ARRAY['species']);
 
+-- transcript
 create table
 hive.biomart.transcript (
 transcript_id BIGINT,
@@ -50,6 +54,7 @@ species VARCHAR
 )
 with (external_location = 's3a://20240625-241-genomes/transcript', format = 'PARQUET', partitioned_by = ARRAY['species']);
 
+-- translation
 create table
 hive.biomart.translation (
 translation_id BIGINT,
@@ -61,8 +66,29 @@ species VARCHAR
 )
 with (external_location = 's3a://20240625-241-genomes/translation', format = 'PARQUET', partitioned_by = ARRAY['species']);
 
+-- compara
+create table
+hive.biomart.compara (
+    homology_id BIGINT,
+    "description" VARCHAR,
+    "type" VARCHAR,
+    dn DOUBLE,
+    ds DOUBLE,
+    goc_score TINYINT, 
+    wga_coverage DOUBLE,
+    is_high_confidence TINYINT,
+    stable_id VARCHAR,
+    perc_cov DOUBLE,
+    perc_id DOUBLE,
+    homologue_stable_id VARCHAR,
+    homologue_perc_cov DOUBLE,
+    homologue_perc_id DOUBLE,
+    species VARCHAR
+)
+with (external_location = 's3a://20240625-241-genomes/compara', format = 'PARQUET', partitioned_by = ARRAY['species']);
+
+-- partitions
 call hive.system.sync_partition_metadata('biomart', 'gene', 'ADD');
-
 call hive.system.sync_partition_metadata('biomart', 'transcript', 'ADD');
-
 call hive.system.sync_partition_metadata('biomart', 'translation', 'ADD');
+call hive.system.sync_partition_metadata('biomart', 'compara', 'ADD');

@@ -1,8 +1,6 @@
-from pypika import PostgreSQLQuery, Criterion
+from pypika import PostgreSQLQuery, Criterion, Table
 from search_python_client.search import SearchClient
 from flask import current_app as app
-
-from app.table import Gene, Transcript, Translation
 
 class DataConnectConnection():
     def __init__(self) -> None:
@@ -33,13 +31,9 @@ class BuildSQLQuery():
     def __init__(self, table, cols, filters = None, limit = None, distinct = False) -> None:
         catalog = app.config["CATALOG"]
         schema = app.config["SCHEMA"]
-        if table == 'gene':
-            t = Gene
-        elif table == 'transcript':
-            t = Transcript
-        else:
-            t = Translation
-        self.table = t(schema=(catalog, schema))
+
+        t = Table(table, schema=(catalog, schema))
+        self.table = t
         if isinstance(cols, str):
             self.cols = [cols]
         else:

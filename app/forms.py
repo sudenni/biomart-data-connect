@@ -10,7 +10,10 @@ class MultiCheckboxField(SelectMultipleField):
 class TableForm(FlaskForm):
     table = SelectField('Table',
                         validators=[DataRequired()],
-                        choices=[('gene', 'Gene'), ('transcript', 'Transcript'), ('translation', 'Translation')])
+                        choices=[('gene', 'Gene'), 
+                                 ('transcript', 'Transcript'), 
+                                 ('translation', 'Translation'),
+                                 ('compara', 'Compara')])
 
     species = StringField('Species',
                           validators=[DataRequired()],
