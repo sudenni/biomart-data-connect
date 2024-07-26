@@ -25,6 +25,9 @@ class ColumnForm(FlaskForm):
     columns = MultiCheckboxField('Select columns', validators=[DataRequired()],
                           choices = [])
 
+    columns_compara = MultiCheckboxField('Select columns', validators=[DataRequired()],
+                          choices = [])
+    
     submit = SubmitField('Query table')
 
 class FilterForm(Form):
