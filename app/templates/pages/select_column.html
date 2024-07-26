@@ -1,12 +1,34 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <form action="" method="post" novalidate>
-        {{ form.hidden_tag() }}
-        <p>
-            {{ form.columns.label }}<br>
-            {{ form.columns }}
-        <p>
-        <p>{{ form.submit() }}</p>
+<table>
+    <tr>
+        <th> Select columns </th>
+        {% if form.columns_compara %}
+        <th> Select Compara columns </th>
+        {% endif %}
+    </tr>
+
+    <tr>
+        <td>
+            
+            <form action="" method="post" novalidate>
+                {{ form.hidden_tag() }}
+                <p>
+                    {{ form.columns }}
+                <p>
+                <p>{{ form.submit() }}</p>
+            
+
+        </td>
+        {% if form.columns_compara %}
+        <td>
+            {{ form.columns_compara }}
+        </td>
+        {% endif %}
+    
     </form>
+
+    </tr>
+</table>
 {% endblock %}
