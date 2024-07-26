@@ -80,9 +80,10 @@ hive.biomart.compara (
     stable_id VARCHAR,
     perc_cov DOUBLE,
     perc_id DOUBLE,
-    homologue_stable_id VARCHAR,
-    homologue_perc_cov DOUBLE,
-    homologue_perc_id DOUBLE,
+    homolog_stable_id VARCHAR,
+    homolog_species VARCHAR,
+    homolog_perc_cov DOUBLE,
+    homolog_perc_id DOUBLE,
     species VARCHAR
 )
 with (external_location = 's3a://20240625-241-genomes/compara', format = 'PARQUET', partitioned_by = ARRAY['species']);
